@@ -433,6 +433,20 @@ SPECS = types.MappingProxyType({
         'in_queue': (Stage.HINT, Location.NODE, Type.MASK),
         'u': (Stage.HINT, Location.NODE, Type.MASK_ONE)
     },
+    'johnsons': {
+        'pos': (Stage.INPUT, Location.NODE, Type.SCALAR),
+        'A': (Stage.INPUT, Location.EDGE, Type.SCALAR),
+        'adj': (Stage.INPUT, Location.EDGE, Type.MASK),
+        'Pi': (Stage.OUTPUT, Location.EDGE, Type.POINTER),
+        'phase': (Stage.HINT, Location.GRAPH, Type.CATEGORICAL),
+        'A_h': (Stage.HINT, Location.EDGE, Type.SCALAR),
+        'd_b': (Stage.HINT, Location.NODE, Type.SCALAR),
+        'Pi_d': (Stage.HINT, Location.EDGE, Type.POINTER),
+        'd_d': (Stage.HINT, Location.EDGE, Type.SCALAR),
+        'mark_d': (Stage.HINT, Location.EDGE, Type.MASK),
+        'in_queue_d': (Stage.HINT, Location.EDGE, Type.MASK),
+        'u_d': (Stage.HINT, Location.EDGE, Type.MASK)
+    },
     'floyd_warshall': {
         'pos': (Stage.INPUT, Location.NODE, Type.SCALAR),
         'A': (Stage.INPUT, Location.EDGE, Type.SCALAR),

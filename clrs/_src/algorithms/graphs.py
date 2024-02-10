@@ -1445,6 +1445,99 @@ def dag_shortest_paths(A: _Array, s: int) -> _Out:
   return pi, probes
 
 
+def johnsons(A: _Array) -> _Out:
+  """Johnson's all-pairs shortest paths (Johnson, 1977)."""
+  
+  chex.assert_rank(A, 2)
+  probes = probing.initialize(specs.SPECS['johnsons'])
+
+  N = A.shape[0]
+  A_pos = np.arange(N)
+
+  probing.push(
+      probes,
+      specs.Stage.INPUT,
+      next_probe={
+          'pos': np.copy(A_pos) * 1.0 / N,
+          'A': np.copy(A),
+          'adj': probing.graph(np.copy(A))
+      })
+  
+  A_h = np.copy(A)
+  d_b = np.zeros(N)
+
+  Pi = np.tile(np.arange(N), (N, 1))
+  d_d = np.zeros(A.shape)
+  mark_d = np.zeros(A.shape)
+  in_queue_d = np.eye(N)
+  u_d = np.eye(N)
+
+  for i in range(N + 1):
+    prev_d = np.copy(d_b)
+    probing.push(
+        probes,
+        specs.Stage.HINT,
+        next_probe={
+            'phase': 0,
+            'A_h': np.copy(A_h),
+            'd_b': np.copy(prev_d),
+            'Pi_d': np.copy(Pi),
+            'd_d': np.copy(d_d),
+            'mark_d': np.copy(mark_d),
+            'in_queue_d': np.copy(in_queue_d),
+            'u_d': np.copy(u_d)
+        })
+    
+    for u in range(N):
+      for v in range(N):
+        if A[u, v] != 0:
+          if prev_d[u] + A[u, v] < d_b[v]:
+            d_b[v] = prev_d[u] + A[u, v]
+    A_h += d_b[:, None] - d_b
+    if np.all(d_b == prev_d):
+      break
+    if i == N:
+      raise ValueError('Negative cycle detected', A)
+
+  assert np.all(A_h >= 0), f'Reweighting failed: {A_h}'
+  for _ in range(N):
+    u = np.argmin(d_d + (1.0 - in_queue_d) * 1e9, axis=1)
+    if np.all(np.diag(in_queue_d[:,u]) == 0):
+      break
+    mark_d[range(N), u] = 1
+    in_queue_d[range(N), u] = 0
+    for v in range(N):
+      mask = (
+        (A[u, v] != 0) &            # edge exists
+        (mark_d[:, v] == 0) &       # node not visited
+        (
+          (in_queue_d[:, v] == 0) |                     # node unseen
+          (d_d[range(N), u] + A_h[u, v] < d_d[:, v]))   # distance is shorter
+        )
+      Pi[mask, v] = u[mask]
+      d_d[mask, v] = d_d[mask, u] + A_h[u, v]
+      in_queue_d[mask, v] = 1
+
+    probing.push(
+        probes,
+        specs.Stage.HINT,
+        next_probe={
+            'phase': 1,
+            'A_h': np.copy(A_h),
+            'd_b': np.copy(d_b),
+            'Pi_d': np.copy(Pi),
+            'd_d': np.copy(d_d),
+            'mark_d': np.copy(mark_d),
+            'in_queue_d': np.copy(in_queue_d),
+            'u_d': np.copy(u_d)
+        })
+    
+    probing.push(probes, specs.Stage.OUTPUT, next_probe={'Pi': np.copy(Pi)})
+    probing.finalize(probes)
+
+  return Pi, probes
+  
+
 def floyd_warshall(A: _Array) -> _Out:
   """Floyd-Warshall's all-pairs shortest paths (Floyd, 1962)."""
 
