@@ -1499,6 +1499,134 @@ def floyd_warshall(A: _Array) -> _Out:
 
   return Pi, probes
 
+# Expects A to have missing edges with weight 1e9
+def johnsons(A: _Array) -> _Out:
+  """Johnson's shortest paths between all vertices (Johnson, 1977)."""
+
+  chex.assert_rank(A, 2)
+  probes = probing.initialize(specs.SPECS['johnsons'])
+
+  A_pos = np.arange(A.shape[0])
+
+  probing.push(
+      probes,
+      specs.Stage.INPUT,
+      next_probe={
+          'pos': np.copy(A_pos) * 1.0 / A.shape[0],
+          'A': np.copy(A),
+          'adj': probing.neg_weight_graph(np.copy(A))
+      })
+
+  # A_rw is the reweighted edge graph
+  A_rw = np.copy(A)
+
+  # Bellman-Ford hints
+  d = np.zeros(A.shape[0])
+  pi = np.arange(A.shape[0])
+  msk = np.zeros(A.shape[0])
+
+  # Dijkstra hints
+  # N-parallel instances of Dijkstra as row-wise matrices
+  D = np.full((A.shape[0], A.shape[0]), 1e9)
+  Mark = np.zeros((A.shape[0], A.shape[0]))
+  In_q = np.eye(A.shape[0])
+  # Every node starts by having itself as predecessor
+  Pi = np.tile(np.arange(A.shape[0]), (A.shape[0], 1))
+  # A row-wise one-hot encoding of which node is being visited row-wise
+  U = np.eye(A.shape[0])
+
+  # Assuming that nodes are at distance 0 from themselves instead of infinity
+  for i in range(A.shape[0]):
+    D[i,i] = 0
+
+  while True:
+    prev_d = np.copy(d)
+    prev_msk = np.copy(msk)
+    probing.push(
+        probes,
+        specs.Stage.HINT,
+        next_probe={
+            'pi_h': np.copy(pi),
+            'd': np.copy(prev_d),
+            'msk': np.copy(prev_msk),
+            'A_rw': np.copy(A_rw),
+            'Pi_h': np.copy(Pi),
+            'D': np.copy(D),
+            'Mark': np.copy(Mark),
+            'In_queue': np.copy(In_q),
+            'U': np.copy(U),
+            'phase': 0
+        })
+
+    # -1 is a stand-in for the q node
+    for u in range(-1, A.shape[0]):
+      for v in range(A.shape[0]):
+        w_uv = 0 if u == -1 else A[u,v]
+        if (u == -1 or prev_msk[u] == 1) and w_uv != 0:
+          if msk[v] == 0 or prev_d[u] + w_uv < d[v]:
+            d[v] = prev_d[u] + w_uv
+            pi[v] = u
+          msk[v] = 1
+          if u != -1:
+              A_rw[u, v] = w_uv + d[u] - d[v]
+    if np.all(d == prev_d):
+      break
+
+  probing.push(
+      probes,
+      specs.Stage.HINT,
+      next_probe={
+          'pi_h': np.copy(pi),
+          'd': np.copy(prev_d),
+          'msk': np.copy(prev_msk),
+          'A_rw': np.copy(A_rw),
+          'Pi_h': np.copy(Pi),
+          'D': np.copy(D),
+          'Mark': np.copy(Mark),
+          'In_queue': np.copy(In_q),
+          'U': np.copy(U),
+          'phase': 1
+      })
+
+  rows = np.arange(A.shape[0])
+  for _ in range(A.shape[0]):
+    us = np.argmin(D + (1.0 - In_q) * 1e9, axis=1)  # drop-in for extract-min
+    Mark[rows, us] = 1
+    In_q[rows, us] = 0 
+
+    # For each parallel instance of Dijkstra
+    for i in range(A.shape[0]):
+      u = us[i]
+      for v in range(A.shape[0]):
+        if A_rw[u, v] != 1e9:
+          if Mark[i, v] == 0 and (In_q[i, v] == 0 or D[i, u] + A_rw[u, v] < D[i, v]):
+            Pi[i, v] = u
+            D[i, v] = D[i, u] + A[u, v]
+            In_q[i, v] = 1
+    
+    U = np.zeros((A.shape[0], A.shape[0]))
+    U[rows, us] = 1
+    probing.push(
+      probes,
+      specs.Stage.HINT,
+      next_probe={
+          'pi_h': np.copy(pi),
+          'd': np.copy(prev_d),
+          'msk': np.copy(prev_msk),
+          'A_rw': np.copy(A_rw),
+          'Pi_h': np.copy(Pi),
+          'D': np.copy(D),
+          'Mark': np.copy(Mark),
+          'In_queue': np.copy(In_q),
+          'U': np.copy(U),
+          'phase': 1,
+    })
+
+  probing.push(probes, specs.Stage.OUTPUT, next_probe={'Pi': np.copy(Pi)})
+  probing.finalize(probes)
+
+  return Pi, probes
+
 
 def bipartite_matching(A: _Array, n: int, m: int, s: int, t: int) -> _Out:
   """Edmonds-Karp bipartite matching (Edmund & Karp, 1972)."""

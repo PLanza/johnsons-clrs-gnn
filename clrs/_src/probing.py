@@ -237,6 +237,13 @@ def graph(A: np.ndarray) -> np.ndarray:
   probe = ((A + np.eye(A.shape[0])) != 0) * 1.0
   return probe
 
+# May have edges with weight 0 so we need another value to represent the
+# absence of an edge, e.g. 1e9
+def neg_weight_graph(A: np.ndarray) -> np.ndarray:
+  """Constructs a `graph` probe."""
+  probe = (A != 1e9) * 1.0
+  probe = ((A + np.eye(A.shape[0])) != 1e9) * 1.0
+  return probe
 
 def mask_one(i: int, n: int) -> np.ndarray:
   """Constructs a `mask_one` probe."""

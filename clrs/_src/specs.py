@@ -81,6 +81,7 @@ CLRS_30_ALGS = [
     'heapsort',
     'insertion_sort',
     'jarvis_march',
+    'johnsons',
     'kmp_matcher',
     'lcs_length',
     'matrix_chain_order',
@@ -443,6 +444,25 @@ SPECS = types.MappingProxyType({
         'msk': (Stage.HINT, Location.EDGE, Type.MASK),
         'k': (Stage.HINT, Location.NODE, Type.MASK_ONE)
     },
+    'johnsons': {
+        'pos': (Stage.INPUT, Location.NODE, Type.SCALAR),
+        'A': (Stage.INPUT, Location.EDGE, Type.SCALAR),
+        'adj': (Stage.INPUT, Location.EDGE, Type.MASK),
+        'Pi': (Stage.OUTPUT, Location.EDGE, Type.POINTER),
+        # Bellman-Ford stage hints
+        'pi_h': (Stage.HINT, Location.NODE, Type.POINTER),
+        'd': (Stage.HINT, Location.NODE, Type.SCALAR),
+        'msk': (Stage.HINT, Location.NODE, Type.MASK),
+        'A_rw': (Stage.HINT, Location.EDGE, Type.SCALAR),
+        # Dijkstra stage hints
+        'Pi_h': (Stage.HINT, Location.EDGE, Type.POINTER),
+        'D': (Stage.HINT, Location.EDGE, Type.SCALAR),
+        'Mark': (Stage.HINT, Location.EDGE, Type.Mask),
+        'In_queue': (Stage.HINT, Location.EDGE, Type.Mask),
+        'U': (Stage.HINT, Location.EDGE, Type.Mask),
+        # Phase indicator
+        'phase': (Stage.HINT, Location.Graph, Type.MASK)
+    }
     'bipartite_matching': {
         'pos': (Stage.INPUT, Location.NODE, Type.SCALAR),
         'A': (Stage.INPUT, Location.EDGE, Type.SCALAR),
