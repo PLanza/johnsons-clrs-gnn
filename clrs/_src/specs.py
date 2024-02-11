@@ -461,7 +461,7 @@ SPECS = types.MappingProxyType({
         'In_queue': (Stage.HINT, Location.EDGE, Type.MASK),
         'U': (Stage.HINT, Location.EDGE, Type.MASK),
         # Phase indicator
-        'phase': (Stage.HINT, Location.Graph, Type.MASK)
+        'phase': (Stage.HINT, Location.GRAPH, Type.MASK)
     },
     'bipartite_matching': {
         'pos': (Stage.INPUT, Location.NODE, Type.SCALAR),
