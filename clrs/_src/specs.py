@@ -462,7 +462,7 @@ SPECS = types.MappingProxyType({
         'U': (Stage.HINT, Location.EDGE, Type.Mask),
         # Phase indicator
         'phase': (Stage.HINT, Location.Graph, Type.MASK)
-    }
+    },
     'bipartite_matching': {
         'pos': (Stage.INPUT, Location.NODE, Type.SCALAR),
         'A': (Stage.INPUT, Location.EDGE, Type.SCALAR),
