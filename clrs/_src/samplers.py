@@ -215,7 +215,7 @@ class Sampler(abc.ABC):
         k = (high - low) / 3 # Twice as likely to produce [low + k, high - k] than [low, low + k] or [high - k, high]
         weights = self._rng.uniform(low=low+k, high=high-k, size=(nb_nodes, nb_nodes))
         reweighting = self._rng.choice((0,k), size=nb_nodes)
-        weights += reweighting[:, None] - reweighting
+        weights = np.where(weights == 0, 0, weights + reweighting[:, None] - reweighting)
       mat = mat.astype(float) * weights
     return mat
 

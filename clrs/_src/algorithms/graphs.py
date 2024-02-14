@@ -1470,7 +1470,7 @@ def johnsons(A: _Array) -> _Out:
   d_d = np.zeros(A.shape)
   mark_d = np.zeros(A.shape)
   in_queue_d = np.eye(N)
-  u = np.eye(N)
+  u_d = np.arange(N, dtype=int)
 
   for i in range(N + 1):
     prev_d = np.copy(d_b)
@@ -1485,15 +1485,15 @@ def johnsons(A: _Array) -> _Out:
             'd_d': np.copy(d_d),
             'mark_d': np.copy(mark_d),
             'in_queue_d': np.copy(in_queue_d),
-            'u_d': np.copy(u)
+            'u_d': np.eye(N)[u_d]
         })
-    
+
     for u in range(N):
       for v in range(N):
         if A[u, v] != 0:
           if prev_d[u] + A[u, v] < d_b[v]:
             d_b[v] = prev_d[u] + A[u, v]
-    A_h = A + d_b[:, None] - d_b
+    A_h = np.where(A == 0, 0, A + d_b[:, None] - d_b)
     if np.all(d_b == prev_d):
       break
     if i == N:
@@ -1501,21 +1501,21 @@ def johnsons(A: _Array) -> _Out:
 
   assert np.all(A_h >= 0), f'Reweighting failed: {A_h}'
   for _ in range(N):
-    u = np.argmin(d_d + (1.0 - in_queue_d) * 1e9, axis=1)
-    if np.all(np.diag(in_queue_d[:,u]) == 0):
+    u_d = np.argmin(d_d + (1.0 - in_queue_d) * 1e9, axis=1)
+    if np.all(np.diag(in_queue_d[:,u_d]) == 0):
       break
-    mark_d[range(N), u] = 1
-    in_queue_d[range(N), u] = 0
+    mark_d[range(N), u_d] = 1
+    in_queue_d[range(N), u_d] = 0
     for v in range(N):
       mask = (
-        (A[u, v] != 0) &            # edge exists
+        (A[u_d, v] != 0) &            # edge exists
         (mark_d[:, v] == 0) &       # node not visited
         (
-          (in_queue_d[:, v] == 0) |                     # node unseen
-          (d_d[range(N), u] + A_h[u, v] < d_d[:, v]))   # distance is shorter
+          (in_queue_d[:, v] == 0) |                         # node unseen
+          (d_d[range(N), u_d] + A_h[u_d, v] < d_d[:, v]))   # distance is shorter
         )
-      Pi[mask, v] = u[mask]
-      d_d[mask, v] = d_d[mask, u] + A_h[u, v]
+      Pi[mask, v] = u_d[mask]
+      d_d[mask, v] = d_d[range(N), u_d][mask] + A_h[u_d, v][mask]
       in_queue_d[mask, v] = 1
 
     probing.push(
@@ -1529,11 +1529,11 @@ def johnsons(A: _Array) -> _Out:
             'd_d': np.copy(d_d),
             'mark_d': np.copy(mark_d),
             'in_queue_d': np.copy(in_queue_d),
-            'u_d': np.eye(N)[u]
+            'u_d': np.eye(N)[u_d]
         })
     
-    probing.push(probes, specs.Stage.OUTPUT, next_probe={'Pi': np.copy(Pi)})
-    probing.finalize(probes)
+  probing.push(probes, specs.Stage.OUTPUT, next_probe={'Pi': np.copy(Pi)})
+  probing.finalize(probes)
 
   return Pi, probes
   

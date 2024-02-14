@@ -438,7 +438,7 @@ SPECS = types.MappingProxyType({
         'A': (Stage.INPUT, Location.EDGE, Type.SCALAR),
         'adj': (Stage.INPUT, Location.EDGE, Type.MASK),
         'Pi': (Stage.OUTPUT, Location.EDGE, Type.POINTER),
-        'phase': (Stage.HINT, Location.GRAPH, Type.CATEGORICAL),
+        'phase': (Stage.HINT, Location.GRAPH, Type.MASK),
         'A_h': (Stage.HINT, Location.EDGE, Type.SCALAR),
         'd_b': (Stage.HINT, Location.NODE, Type.SCALAR),
         'Pi_d': (Stage.HINT, Location.EDGE, Type.POINTER),
