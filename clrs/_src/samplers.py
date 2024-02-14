@@ -211,10 +211,11 @@ class Sampler(abc.ABC):
         if not directed:
           raise NotImplementedError('Undirected weighted graphs without negative cycles not implemented')
         
+        if low + high < 0:
+          raise NotImplementedError('Unable to generaet random graphs with |low| > |high|')
         # Note this does not produce weights that are uniformly distributed
-        k = (high - low) / 3 # Twice as likely to produce [low + k, high - k] than [low, low + k] or [high - k, high]
-        weights = self._rng.uniform(low=low+k, high=high-k, size=(nb_nodes, nb_nodes))
-        reweighting = self._rng.choice((0,k), size=nb_nodes)
+        weights = self._rng.uniform(low=0, high=low+high, size=(nb_nodes, nb_nodes))
+        reweighting = self._rng.uniform(low=low, high=0, size=nb_nodes)
         weights = np.where(weights == 0, 0, weights + reweighting[:, None] - reweighting)
       mat = mat.astype(float) * weights
     return mat
