@@ -1499,7 +1499,6 @@ def floyd_warshall(A: _Array) -> _Out:
 
   return Pi, probes
 
-# Expects A to have missing edges with weight 1e9
 def johnsons(A: _Array) -> _Out:
   """Johnson's shortest paths between all vertices (Johnson, 1977)."""
 
@@ -1514,16 +1513,17 @@ def johnsons(A: _Array) -> _Out:
       next_probe={
           'pos': np.copy(A_pos) * 1.0 / A.shape[0],
           'A': np.copy(A),
-          'adj': probing.neg_weight_graph(np.copy(A))
+          'adj': probing.graph(np.copy(A))
       })
-
-  # A_rw is the reweighted edge graph
-  A_rw = np.copy(A)
 
   # Bellman-Ford hints
   d = np.zeros(A.shape[0])
   pi = np.arange(A.shape[0])
   msk = np.zeros(A.shape[0])
+
+  # Change missing edges to have weight 1e9
+  A_rw = np.where(A == 0, 1e9, A)
+  np.fill_diagonal(A_rw, 0)
 
   # Dijkstra hints
   # N-parallel instances of Dijkstra as row-wise matrices
