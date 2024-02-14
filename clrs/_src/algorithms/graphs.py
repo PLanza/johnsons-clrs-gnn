@@ -1470,7 +1470,7 @@ def johnsons(A: _Array) -> _Out:
   d_d = np.zeros(A.shape)
   mark_d = np.zeros(A.shape)
   in_queue_d = np.eye(N)
-  u_d = np.eye(N)
+  u = np.eye(N)
 
   for i in range(N + 1):
     prev_d = np.copy(d_b)
@@ -1485,7 +1485,7 @@ def johnsons(A: _Array) -> _Out:
             'd_d': np.copy(d_d),
             'mark_d': np.copy(mark_d),
             'in_queue_d': np.copy(in_queue_d),
-            'u_d': np.copy(u_d)
+            'u_d': np.copy(u)
         })
     
     for u in range(N):
@@ -1493,7 +1493,7 @@ def johnsons(A: _Array) -> _Out:
         if A[u, v] != 0:
           if prev_d[u] + A[u, v] < d_b[v]:
             d_b[v] = prev_d[u] + A[u, v]
-    A_h += d_b[:, None] - d_b
+    A_h = A + d_b[:, None] - d_b
     if np.all(d_b == prev_d):
       break
     if i == N:
@@ -1529,7 +1529,7 @@ def johnsons(A: _Array) -> _Out:
             'd_d': np.copy(d_d),
             'mark_d': np.copy(mark_d),
             'in_queue_d': np.copy(in_queue_d),
-            'u_d': np.copy(u_d)
+            'u_d': np.eye(N)[u]
         })
     
     probing.push(probes, specs.Stage.OUTPUT, next_probe={'Pi': np.copy(Pi)})

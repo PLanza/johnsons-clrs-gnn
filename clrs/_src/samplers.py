@@ -518,6 +518,27 @@ class DAGPathSampler(Sampler):
     return [graph, source_node]
 
 
+class Johnsons(Sampler):
+  """Sampler for all-pairs shortest paths with negative edge weights"""
+  def _sample_data(
+      self,
+      length: int,
+      p: Tuple[float, ...] = (0.5,),
+      low: float = -1.,
+      high: float = 1.,
+  ):
+    graph = self._random_er_graph(
+      nb_nodes=length,
+      p=self._rng.choice(p),
+      directed=True,
+      acyclic=False,
+      weighted=True,
+      low=low,
+      high=high,
+      negative_cycles=False,
+    )
+    return [graph]
+
 class FloydWarshallSampler(Sampler):
   """Sampler for all-pairs shortest paths."""
 
