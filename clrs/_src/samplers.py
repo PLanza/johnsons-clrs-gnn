@@ -191,7 +191,7 @@ class Sampler(abc.ABC):
     return self._rng.randint(0, high=chars, size=(length,))
 
   def _random_er_graph(self, nb_nodes, p=0.5, directed=False, acyclic=False,
-                       weighted=False, low=0.0, high=1.0):
+                       weighted=False, low=0.0, high=1.0, negative_cycles=True):
     """Random Erdos-Renyi graph."""
 
     mat = self._rng.binomial(1, p, size=(nb_nodes, nb_nodes))
@@ -202,10 +202,20 @@ class Sampler(abc.ABC):
       p = self._rng.permutation(nb_nodes)  # To allow nontrivial solutions
       mat = mat[p, :][:, p]
     if weighted:
-      weights = self._rng.uniform(low=low, high=high, size=(nb_nodes, nb_nodes))
-      if not directed:
-        weights *= np.transpose(weights)
-        weights = np.sqrt(weights + 1e-3)  # Add epsilon to protect underflow
+      if low > 0 or negative_cycles:
+        weights = self._rng.uniform(low=low, high=high, size=(nb_nodes, nb_nodes))
+        if not directed:
+            weights *= np.transpose(weights)
+            weights = np.sqrt(weights + 1e-3)  # Add epsilon to protect underflow
+      else:
+        if not directed:
+          raise NotImplementedError('Undirected weighted graphs without negative cycles not implemented')
+        
+        # Note this does not produce weights that are uniformly distributed
+        k = (high - low) / 3 # Twice as likely to produce [low + k, high - k] than [low, low + k] or [high - k, high]
+        weights = self._rng.uniform(low=low+k, high=high-k, size=(nb_nodes, nb_nodes))
+        reweighting = self._rng.choice((0,k), size=nb_nodes)
+        weights = np.where(weights == 0, 0, weights + reweighting[:, None] - reweighting)
       mat = mat.astype(float) * weights
     return mat
 
@@ -507,6 +517,27 @@ class DAGPathSampler(Sampler):
     source_node = self._rng.choice(length)
     return [graph, source_node]
 
+
+class Johnsons(Sampler):
+  """Sampler for all-pairs shortest paths with negative edge weights"""
+  def _sample_data(
+      self,
+      length: int,
+      p: Tuple[float, ...] = (0.5,),
+      low: float = -1.,
+      high: float = 1.,
+  ):
+    graph = self._random_er_graph(
+      nb_nodes=length,
+      p=self._rng.choice(p),
+      directed=True,
+      acyclic=False,
+      weighted=True,
+      low=low,
+      high=high,
+      negative_cycles=False,
+    )
+    return [graph]
 
 class FloydWarshallSampler(Sampler):
   """Sampler for all-pairs shortest paths."""
