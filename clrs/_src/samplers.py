@@ -525,7 +525,7 @@ class Johnsons(Sampler):
       self,
       length: int,
       p: Tuple[float, ...] = (0.5,),
-      low: float = -1.,
+      low: float = -0.5,
       high: float = 1.,
   ):
     graph = self._random_er_graph(
