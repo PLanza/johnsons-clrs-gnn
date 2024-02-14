@@ -1522,6 +1522,7 @@ def johnsons(A: _Array) -> _Out:
   msk = np.zeros(A.shape[0])
 
   # Change missing edges to have weight 1e9
+  A_copy = np.copy(A)
   A = np.where(A == 0, 1e9, A)
   np.fill_diagonal(A, 0)
   A_rw = np.copy(A)
@@ -1577,7 +1578,7 @@ def johnsons(A: _Array) -> _Out:
     if np.all(d == prev_d) and i != 0:
       break
     if i == N:
-      raise ValueError("Negative edge cycle detected", A)
+      raise ValueError("Negative edge cycle detected", A_copy)
 
   probing.push(
       probes,
