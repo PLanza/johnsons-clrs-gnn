@@ -518,7 +518,7 @@ class DAGPathSampler(Sampler):
     return [graph, source_node]
 
 
-class Johnsons(Sampler):
+class JohnsonsSampler(Sampler):
   """Sampler for all-pairs shortest paths with negative edge weights"""
   def _sample_data(
       self,
@@ -689,6 +689,7 @@ SAMPLERS = {
     'dag_shortest_paths': DAGPathSampler,
     'dijkstra': BellmanFordSampler,
     'floyd_warshall': FloydWarshallSampler,
+    'johnsons': JohnsonsSampler,
     'bipartite_matching': BipartiteSampler,
     'naive_string_matcher': MatcherSampler,
     'kmp_matcher': MatcherSampler,
