@@ -81,6 +81,7 @@ CLRS_30_ALGS = [
     'heapsort',
     'insertion_sort',
     'jarvis_march',
+    'johnsons',
     'kmp_matcher',
     'lcs_length',
     'matrix_chain_order',
