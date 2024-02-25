@@ -1521,10 +1521,6 @@ def johnsons(A: _Array) -> _Out:
   pi = np.full(A.shape[0], -1)
   msk = np.zeros(A.shape[0])
 
-  # Change missing edges to have weight 1e9
-  A_copy = np.copy(A)
-  A = np.where(A == 0, 1e9, A)
-  np.fill_diagonal(A, 0)
   A_rw = np.copy(A)
 
   # Dijkstra hints
@@ -1545,7 +1541,6 @@ def johnsons(A: _Array) -> _Out:
   for i in range(N+1):
     prev_d = np.copy(d)
     prev_msk = np.copy(msk)
-    prev_pi = np.copy(pi)
     probing.push(
         probes,
         specs.Stage.HINT,
@@ -1566,19 +1561,20 @@ def johnsons(A: _Array) -> _Out:
     for u in range(-1, A.shape[0]):
       for v in range(A.shape[0]):
         w_uv = 0 if u == -1 else A[u,v]
+        edge = u == -1 or A[u,v] != 0
         
-        if (u == -1 or prev_msk[u] == 1) and w_uv != 1e9:
+        if (u == -1 or prev_msk[u] == 1) and edge:
           if msk[v] == 0 or prev_d[u] + w_uv < d[v]:
             d[v] = (prev_d[u] if u != -1 else 0) + w_uv
             pi[v] = u
           msk[v] = 1
     
-    A_rw = np.where(A == 1e9, 1e9, A + d[:, None] - d)
+    A_rw = np.where(A == 0, 0, A + d[:, None] - d)
 
     if np.all(d == prev_d) and i != 0:
       break
     if i == N:
-      raise ValueError("Negative edge cycle detected", A_copy)
+      raise ValueError("Negative edge cycle detected", A)
 
   probing.push(
       probes,
@@ -1606,7 +1602,7 @@ def johnsons(A: _Array) -> _Out:
     for i in range(A.shape[0]):
       u = us[i]
       for v in range(A.shape[0]):
-        if A_rw[u, v] != 1e9:
+        if A[u, v] != 0:
           if Mark[i, v] == 0 and (In_q[i, v] == 0 or D[i, u] + A_rw[u, v] < D[i, v]):
             Pi[i, v] = u
             D[i, v] = D[i, u] + A_rw[u, v]
