@@ -1525,7 +1525,7 @@ def johnsons(A: _Array) -> _Out:
 
   # Dijkstra hints
   # N-parallel instances of Dijkstra as row-wise matrices
-  D = np.full((A.shape[0], A.shape[0]), 1e9)
+  D = np.full((A.shape[0], A.shape[0]), 0)
   Mark = np.zeros((A.shape[0], A.shape[0]))
   In_q = np.eye(A.shape[0])
   # Every node starts by having itself as predecessor
