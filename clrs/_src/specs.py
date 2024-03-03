@@ -456,10 +456,10 @@ SPECS = types.MappingProxyType({
         'A_rw': (Stage.HINT, Location.EDGE, Type.SCALAR),
         # Dijkstra stage hints
         'Pi_h': (Stage.HINT, Location.EDGE, Type.POINTER),
-        'D': (Stage.HINT, Location.EDGE, Type.SCALAR),
-        'Mark': (Stage.HINT, Location.EDGE, Type.MASK),
-        'In_queue': (Stage.HINT, Location.EDGE, Type.MASK),
-        'U': (Stage.HINT, Location.EDGE, Type.MASK),
+        'mark': (Stage.HINT, Location.EDGE, Type.MASK),
+        'in_queue': (Stage.HINT, Location.EDGE, Type.MASK),
+        'u': (Stage.HINT, Location.EDGE, Type.MASK),
+        's': (Stage.HINT, Location.EDGE, Type.MASK_ONE),
         # Phase indicator
         'phase': (Stage.HINT, Location.GRAPH, Type.MASK)
     },
