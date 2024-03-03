@@ -459,7 +459,7 @@ SPECS = types.MappingProxyType({
         'mark': (Stage.HINT, Location.EDGE, Type.MASK),
         'in_queue': (Stage.HINT, Location.EDGE, Type.MASK),
         'u': (Stage.HINT, Location.EDGE, Type.MASK),
-        's': (Stage.HINT, Location.EDGE, Type.MASK_ONE),
+        's': (Stage.HINT, Location.EDGE, Type.MASK),
         # Phase indicator
         'phase': (Stage.HINT, Location.GRAPH, Type.MASK)
     },
