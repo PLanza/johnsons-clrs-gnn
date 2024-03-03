@@ -1523,19 +1523,11 @@ def johnsons(A: _Array) -> _Out:
 
   A_rw = np.copy(A)
 
-  # Dijkstra hints
-  # N-parallel instances of Dijkstra as row-wise matrices
-  D = np.full((A.shape[0], A.shape[0]), 0)
-  Mark = np.zeros((A.shape[0], A.shape[0]))
-  In_q = np.eye(A.shape[0])
-  # Every node starts by having itself as predecessor
-  Pi = np.tile(np.arange(A.shape[0]), (A.shape[0], 1))
-  # A row-wise one-hot encoding of which node is being visited row-wise
-  U = np.eye(A.shape[0])
-
-  # Assuming that nodes are at distance 0 from themselves instead of infinity
-  for i in range(A.shape[0]):
-    D[i,i] = 0
+  mark = np.zeros(A.shape[0])
+  in_q = np.zeros(A.shape[0])
+  Pi = np.zeros((A.shape[0], A.shape[0]))
+  u = np.zeros(A.shape[0])
+  s = np.zeros(A.shape[0])
 
   N = A.shape[0]
   for i in range(N+1):
@@ -1550,25 +1542,25 @@ def johnsons(A: _Array) -> _Out:
             'msk': np.copy(prev_msk),
             'A_rw': np.copy(A_rw),
             'Pi_h': np.copy(Pi),
-            'D': np.copy(D),
-            'Mark': np.copy(Mark),
-            'In_queue': np.copy(In_q),
-            'U': np.copy(U),
+            'mark': np.copy(mark),
+            'in_queue': np.copy(in_q),
+            'u': np.copy(u),
+            's': np.copy(s),
             'phase': 0
         })
 
     # -1 is a stand-in for the q node
-    for u in range(-1, A.shape[0]):
+    for w in range(-1, A.shape[0]):
       for v in range(A.shape[0]):
-        w_uv = 0 if u == -1 else A[u,v]
-        edge = u == -1 or A[u,v] != 0
-        
-        if (u == -1 or prev_msk[u] == 1) and edge:
-          if msk[v] == 0 or prev_d[u] + w_uv < d[v]:
-            d[v] = (prev_d[u] if u != -1 else 0) + w_uv
-            pi[v] = u
+        w_uv = 0 if w == -1 else A[w,v]
+        edge = w == -1 or A[w,v] != 0
+
+        if (w == -1 or prev_msk[w] == 1) and edge:
+          if msk[v] == 0 or prev_d[w] + w_uv < d[v]:
+            d[v] = (prev_d[w] if w != -1 else 0) + w_uv
+            pi[v] = w
           msk[v] = 1
-    
+
     A_rw = np.where(A == 0, 0, A + d[:, None] - d)
 
     if np.all(d == prev_d) and i != 0:
@@ -1576,55 +1568,63 @@ def johnsons(A: _Array) -> _Out:
     if i == N:
       raise ValueError("Negative edge cycle detected", A)
 
-  probing.push(
-      probes,
-      specs.Stage.HINT,
-      next_probe={
-          'pi_h': np.copy(pi),
-          'd': np.copy(prev_d),
-          'msk': np.copy(prev_msk),
-          'A_rw': np.copy(A_rw),
-          'Pi_h': np.copy(Pi),
-          'D': np.copy(D),
-          'Mark': np.copy(Mark),
-          'In_queue': np.copy(In_q),
-          'U': np.copy(U),
-          'phase': 1
-      })
+  Pi = np.tile(np.arange(A.shape[0]), (A.shape[0], 1))
 
-  rows = np.arange(A.shape[0])
-  for _ in range(A.shape[0]):
-    us = np.argmin(D + (1.0 - In_q) * 1e9, axis=1)  # drop-in for extract-min
-    Mark[rows, us] = 1
-    In_q[rows, us] = 0 
+  # For each instance of Dijkstra
+  for i in range(A.shape[0]):
+  # Dijkstra hints
+    d = np.zeros(A.shape[0])
+    mark = np.zeros(A.shape[0])
+    # Every node starts by having itself as predecessor
+    in_q = np.zeros(A.shape[0])
+    in_q[i] = 1
 
-    # For each parallel instance of Dijkstra
-    for i in range(A.shape[0]):
-      u = us[i]
+    # The current starting node
+    s = np.copy(in_q)
+
+    probing.push(
+        probes,
+        specs.Stage.HINT,
+        next_probe={
+            'pi_h': np.copy(pi),
+            'd': np.copy(prev_d),
+            'msk': np.copy(prev_msk),
+            'A_rw': np.copy(A_rw),
+            'Pi_h': np.copy(Pi),
+            'mark': np.copy(mark),
+            'in_queue': np.copy(in_q),
+            'u': np.zeros(A.shape[0]),
+            's': np.copy(s),
+            'phase': 1,
+        })
+
+    # For each node in the graph
+    for _ in range(A.shape[0]):
+      u = np.argmin(d + (1.0 - in_q) * 1e9)  # drop-in for extract-min
+      mark[u] = 1
+      in_q[u] = 0
       for v in range(A.shape[0]):
         if A[u, v] != 0:
-          if Mark[i, v] == 0 and (In_q[i, v] == 0 or D[i, u] + A_rw[u, v] < D[i, v]):
+          if mark[v] == 0 and (in_q[v] == 0 or d[u] + A_rw[u, v] < d[v]):
             Pi[i, v] = u
-            D[i, v] = D[i, u] + A_rw[u, v]
-            In_q[i, v] = 1
-    
-    U = np.zeros((A.shape[0], A.shape[0]))
-    U[rows, us] = 1
-    probing.push(
-      probes,
-      specs.Stage.HINT,
-      next_probe={
-          'pi_h': np.copy(pi),
-          'd': np.copy(prev_d),
-          'msk': np.copy(prev_msk),
-          'A_rw': np.copy(A_rw),
-          'Pi_h': np.copy(Pi),
-          'D': np.copy(D),
-          'Mark': np.copy(Mark),
-          'In_queue': np.copy(In_q),
-          'U': np.copy(U),
-          'phase': 1,
-    })
+            d[v] = d[u] + A_rw[u, v]
+            in_q[v] = 1
+
+      probing.push(
+        probes,
+        specs.Stage.HINT,
+        next_probe={
+            'pi_h': np.copy(pi),
+            'd': np.copy(prev_d),
+            'msk': np.copy(prev_msk),
+            'A_rw': np.copy(A_rw),
+            'Pi_h': np.copy(Pi),
+            'mark': np.copy(mark),
+            'in_queue': np.copy(in_q),
+            'u': probing.mask_one(u, A.shape[0]),
+            's': np.copy(s),
+            'phase': 1,
+      })
 
   probing.push(probes, specs.Stage.OUTPUT, next_probe={'Pi': np.copy(Pi)})
   probing.finalize(probes)
