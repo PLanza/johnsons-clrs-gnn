@@ -1523,19 +1523,12 @@ def johnsons(A: _Array) -> _Out:
 
   A_rw = np.copy(A)
 
-  # Dijkstra hints
-  # N-parallel instances of Dijkstra as row-wise matrices
-  D = np.full((A.shape[0], A.shape[0]), 0)
+  # Initialize Dijkstra hints to all zeros during BF-phase
+  D = np.zeros((A.shape[0], A.shape[0]))
   Mark = np.zeros((A.shape[0], A.shape[0]))
-  In_q = np.eye(A.shape[0])
-  # Every node starts by having itself as predecessor
-  Pi = np.tile(np.arange(A.shape[0]), (A.shape[0], 1))
-  # A row-wise one-hot encoding of which node is being visited row-wise
-  U = np.eye(A.shape[0])
-
-  # Assuming that nodes are at distance 0 from themselves instead of infinity
-  for i in range(A.shape[0]):
-    D[i,i] = 0
+  In_q = np.zeros((A.shape[0], A.shape[0]))
+  Pi = np.zeros((A.shape[0], A.shape[0]))
+  U = np.zeros((A.shape[0], A.shape[0]))
 
   N = A.shape[0]
   for i in range(N+1):
@@ -1575,6 +1568,16 @@ def johnsons(A: _Array) -> _Out:
       break
     if i == N:
       raise ValueError("Negative edge cycle detected", A)
+             
+  # Dijkstra hints
+  # N-parallel instances of Dijkstra as row-wise matrices
+  D = np.zeros((A.shape[0], A.shape[0]))
+  Mark = np.zeros((A.shape[0], A.shape[0]))
+  In_q = np.eye(A.shape[0])
+  # Every node starts by having itself as predecessor
+  Pi = np.tile(np.arange(A.shape[0]), (A.shape[0], 1))
+  # A row-wise one-hot encoding of which node is being visited row-wise
+  U = np.eye(A.shape[0])
 
   probing.push(
       probes,
