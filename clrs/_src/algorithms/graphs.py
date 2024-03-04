@@ -1553,7 +1553,6 @@ def johnsons(A: _Array) -> _Out:
         if (w == -1 or i != 0) and edge:
           if i == 0 or prev_d[w] + w_uv < d[v]:
             d[v] = (prev_d[w] if w != -1 else 0) + w_uv
-            pi[v] = w
 
     A_rw = np.where(A == 0, 0, A + d[:, None] - d)
 
