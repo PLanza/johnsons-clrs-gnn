@@ -1587,7 +1587,7 @@ def johnsons(A: _Array) -> _Out:
         specs.Stage.HINT,
         next_probe={
             'pi_h': np.copy(pi),
-            'd': np.copy(prev_d),
+            'd': np.copy(d),
             'msk': np.copy(prev_msk),
             'A_rw': np.copy(A_rw),
             'Pi_h': np.copy(Pi),
@@ -1615,7 +1615,7 @@ def johnsons(A: _Array) -> _Out:
         specs.Stage.HINT,
         next_probe={
             'pi_h': np.copy(pi),
-            'd': np.copy(prev_d),
+            'd': np.copy(d),
             'msk': np.copy(prev_msk),
             'A_rw': np.copy(A_rw),
             'Pi_h': np.copy(Pi),
