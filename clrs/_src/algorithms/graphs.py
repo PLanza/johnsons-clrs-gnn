@@ -1563,11 +1563,6 @@ def johnsons(A: _Array) -> _Out:
           msk[v] = 1
     
     A_rw = np.where(A == 0, 0, A + d[:, None] - d)
-
-    if np.all(d == prev_d) and i != 0:
-      break
-    if i == N:
-      raise ValueError("Negative edge cycle detected", A)
              
   # Dijkstra hints
   # N-parallel instances of Dijkstra as row-wise matrices
