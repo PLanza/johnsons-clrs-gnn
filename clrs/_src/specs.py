@@ -450,9 +450,7 @@ SPECS = types.MappingProxyType({
         'adj': (Stage.INPUT, Location.EDGE, Type.MASK),
         'Pi': (Stage.OUTPUT, Location.EDGE, Type.POINTER),
         # Bellman-Ford stage hints
-        'pi_h': (Stage.HINT, Location.NODE, Type.POINTER),
         'd': (Stage.HINT, Location.NODE, Type.SCALAR),
-        'msk': (Stage.HINT, Location.NODE, Type.MASK),
         'A_rw': (Stage.HINT, Location.EDGE, Type.SCALAR),
         # Dijkstra stage hints
         'Pi_h': (Stage.HINT, Location.EDGE, Type.POINTER),

@@ -1518,8 +1518,6 @@ def johnsons(A: _Array) -> _Out:
 
   # Bellman-Ford hints
   d = np.zeros(A.shape[0])
-  pi = np.full(A.shape[0], -1)
-  msk = np.zeros(A.shape[0])
 
   A_rw = np.copy(A)
 
@@ -1532,14 +1530,11 @@ def johnsons(A: _Array) -> _Out:
   N = A.shape[0]
   for i in range(N+1):
     prev_d = np.copy(d)
-    prev_msk = np.copy(msk)
     probing.push(
         probes,
         specs.Stage.HINT,
         next_probe={
-            'pi_h': np.copy(pi),
             'd': np.copy(prev_d),
-            'msk': np.copy(prev_msk),
             'A_rw': np.copy(A_rw),
             'Pi_h': np.copy(Pi),
             'mark': np.copy(mark),
@@ -1555,11 +1550,10 @@ def johnsons(A: _Array) -> _Out:
         w_uv = 0 if w == -1 else A[w,v]
         edge = w == -1 or A[w,v] != 0
 
-        if (w == -1 or prev_msk[w] == 1) and edge:
-          if msk[v] == 0 or prev_d[w] + w_uv < d[v]:
+        if (w == -1 or i != 0) and edge:
+          if i == 0 or prev_d[w] + w_uv < d[v]:
             d[v] = (prev_d[w] if w != -1 else 0) + w_uv
             pi[v] = w
-          msk[v] = 1
 
     A_rw = np.where(A == 0, 0, A + d[:, None] - d)
 
@@ -1586,9 +1580,7 @@ def johnsons(A: _Array) -> _Out:
         probes,
         specs.Stage.HINT,
         next_probe={
-            'pi_h': np.copy(pi),
             'd': np.copy(d),
-            'msk': np.copy(prev_msk),
             'A_rw': np.copy(A_rw),
             'Pi_h': np.copy(Pi),
             'mark': np.copy(mark),
@@ -1614,9 +1606,7 @@ def johnsons(A: _Array) -> _Out:
         probes,
         specs.Stage.HINT,
         next_probe={
-            'pi_h': np.copy(pi),
             'd': np.copy(d),
-            'msk': np.copy(prev_msk),
             'A_rw': np.copy(A_rw),
             'Pi_h': np.copy(Pi),
             'mark': np.copy(mark),
