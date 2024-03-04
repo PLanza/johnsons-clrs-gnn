@@ -1532,15 +1532,15 @@ def johnsons(A: _Array) -> _Out:
 
   N = A.shape[0]
   for i in range(N+1):
+    msk = np.zeros(A.shape[0]) if i == 0 else probing.mask_one(i-1, A.shape[0]) 
     prev_d = np.copy(d)
-    prev_msk = np.copy(msk)
     probing.push(
         probes,
         specs.Stage.HINT,
         next_probe={
             'pi_h': np.copy(pi),
             'd': np.copy(prev_d),
-            'msk': np.copy(prev_msk),
+            'msk': np.copy(msk),
             'A_rw': np.copy(A_rw),
             'Pi_h': np.copy(Pi),
             'D': np.copy(D),
@@ -1556,11 +1556,10 @@ def johnsons(A: _Array) -> _Out:
         w_uv = 0 if u == -1 else A[u,v]
         edge = u == -1 or A[u,v] != 0
         
-        if (u == -1 or prev_msk[u] == 1) and edge:
-          if msk[v] == 0 or prev_d[u] + w_uv < d[v]:
+        if (u == -1 or i != 0) and edge:
+          if i == 0 or prev_d[u] + w_uv < d[v]:
             d[v] = (prev_d[u] if u != -1 else 0) + w_uv
             pi[v] = u
-          msk[v] = 1
     
     A_rw = np.where(A == 0, 0, A + d[:, None] - d)
              
