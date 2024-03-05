@@ -431,6 +431,9 @@ def main(unused_argv):
   # until all algos have had at least one evaluation.
   val_scores = [-99999.9] * len(FLAGS.algorithms)
   length_idx = 0
+  
+  losses = { name: [] for name in FLAGS.algorithms }
+  evals = { name: [] for name in FLAGS.algorithms }
 
   while step < FLAGS.train_steps:
     feedback_list = [next(t) for t in train_samplers]
@@ -463,6 +466,7 @@ def main(unused_argv):
         length_and_algo_idx = algo_idx
       cur_loss = train_model.feedback(rng_key, feedback, length_and_algo_idx)
       rng_key = new_rng_key
+      losses[FLAGS.algorithms[algo_idx]].append(cur_loss[0])
 
       if FLAGS.chunked_training:
         examples_in_chunk = np.sum(feedback.features.is_last).item()
@@ -492,6 +496,7 @@ def main(unused_argv):
         logging.info('(val) algo %s step %d: %s',
                      FLAGS.algorithms[algo_idx], step, val_stats)
         val_scores[algo_idx] = val_stats['score']
+        evals[FLAGS.algorithms[algo_idx]].append(val_stats['score'])
 
       next_eval += FLAGS.eval_every
 
@@ -514,6 +519,8 @@ def main(unused_argv):
     length_idx = (length_idx + 1) % len(train_lengths)
 
   logging.info('Restoring best model from checkpoint...')
+  logging.info(f'loss scores {losses}')
+  logging.info(f'eval scores {evals}')
   eval_model.restore_model('best.pkl', only_load_processor=False)
 
   for algo_idx in range(len(train_samplers)):
