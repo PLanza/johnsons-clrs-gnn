@@ -466,7 +466,7 @@ def main(unused_argv):
         length_and_algo_idx = algo_idx
       cur_loss = train_model.feedback(rng_key, feedback, length_and_algo_idx)
       rng_key = new_rng_key
-      losses[FLAGS.algorithms[algo_idx]].append(cur_loss[0])
+      losses[FLAGS.algorithms[algo_idx]].append(cur_loss.item())
 
       if FLAGS.chunked_training:
         examples_in_chunk = np.sum(feedback.features.is_last).item()
