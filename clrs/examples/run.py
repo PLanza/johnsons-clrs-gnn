@@ -29,6 +29,8 @@ import numpy as np
 import requests
 import tensorflow as tf
 
+import pickle
+
 
 flags.DEFINE_list('algorithms', ['bfs'], 'Which algorithms to run.')
 flags.DEFINE_list('train_lengths', ['4', '7', '11', '13', '16'],
@@ -521,6 +523,12 @@ def main(unused_argv):
   logging.info('Restoring best model from checkpoint...')
   logging.info(f'loss scores {losses}')
   logging.info(f'eval scores {evals}')
+  
+  with open('losses.pickle', 'wb') as loss_file:
+    pickle.dump(losses, loss_file, protocol=pickle.HIGHEST_PROTOCOL)
+  with open('evals.pickle', 'wb') as eval_file:
+    pickle.dump(evals, eval_file, protocol=pickle.HIGHEST_PROTOCOL)
+
   eval_model.restore_model('best.pkl', only_load_processor=False)
 
   for algo_idx in range(len(train_samplers)):
