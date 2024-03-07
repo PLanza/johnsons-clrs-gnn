@@ -46,17 +46,17 @@ Feedback = collections.namedtuple('Feedback', ['features', 'outputs'])
 CLRS30 = types.MappingProxyType({
     'train': {
         'num_samples': 1000,
-        'length': 8,
+        'length': 16,
         'seed': 1,
     },
     'val': {
         'num_samples': 32,
-        'length': 8,
+        'length': 16,
         'seed': 2,
     },
     'test': {
         'num_samples': 32,
-        'length': 16,
+        'length': 64,
         'seed': 3,
     },
 })
