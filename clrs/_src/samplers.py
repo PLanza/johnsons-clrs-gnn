@@ -485,7 +485,7 @@ class BellmanFordSampler(Sampler):
       high: float = 1.,
   ):
     graph = self._random_er_graph(
-        nb_nodes=length,
+        nb_nodes=length-1,
         p=self._rng.choice(p),
         directed=True,
         acyclic=False,
