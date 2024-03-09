@@ -493,12 +493,11 @@ class BellmanFordSampler(Sampler):
         low=low,
         high=high,
         negative_cycles=False)
-    last_row = np.full(length, 1e-5)
+    last_row = np.full((1, length), 1e-5)
     last_column = np.zeros((length+1, 1))
-    print(last_column)
     last_column[-1] = 1e-5
-    np.hstack([graph, last_row])
-    np.vstack([graph, last_column])
+    np.vstack([graph, last_row])
+    np.hstack([graph, last_column])
     source_node = length + 1
     source_node = self._rng.choice(length)
     return [graph, source_node]
