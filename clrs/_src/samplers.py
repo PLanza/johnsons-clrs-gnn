@@ -485,7 +485,7 @@ class BellmanFordSampler(Sampler):
       high: float = 1.,
   ):
     graph = self._random_er_graph(
-        nb_nodes=length,
+        nb_nodes=length-1,
         p=self._rng.choice(p),
         directed=True,
         acyclic=False,
@@ -493,12 +493,12 @@ class BellmanFordSampler(Sampler):
         low=low,
         high=high,
         negative_cycles=False)
-    last_row = np.full((1, length), 1e-5)
-    last_column = np.zeros((length+1, 1))
+    last_row = np.full((1, length-1), 1e-5)
+    last_column = np.zeros((length, 1))
     last_column[-1] = 1e-5
     graph = np.vstack([graph, last_row])
     graph = np.hstack([graph, last_column])
-    source_node = length + 1
+    source_node = length
     return [graph, source_node]
 
 class DijkstraSampler(Sampler):
