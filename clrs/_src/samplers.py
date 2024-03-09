@@ -470,7 +470,14 @@ class MSTSampler(Sampler):
         acyclic=False,
         weighted=True,
         low=low,
-        high=high)
+        high=high,
+        negative_cycles=False)
+    last_row = np.full((1, length), 1e-5)
+    last_column = np.zeros((length+1, 1))
+    last_column[-1] = 1e-5
+    graph.hstack([graph, last_row])
+    graph.vstack([graph, last_column])
+    source_node = length + 1
     return [graph]
 
 
