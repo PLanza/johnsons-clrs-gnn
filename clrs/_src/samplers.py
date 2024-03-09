@@ -481,7 +481,7 @@ class BellmanFordSampler(Sampler):
       self,
       length: int,
       p: Tuple[float, ...] = (0.5,),
-      low: float = 0.,
+      low: float = -0.5,
       high: float = 1.,
   ):
     graph = self._random_er_graph(
@@ -496,12 +496,32 @@ class BellmanFordSampler(Sampler):
     last_row = np.full((1, length), 1e-5)
     last_column = np.zeros((length+1, 1))
     last_column[-1] = 1e-5
-    np.vstack([graph, last_row])
-    np.hstack([graph, last_column])
+    graph = np.vstack([graph, last_row])
+    graph = np.hstack([graph, last_column])
     source_node = length + 1
-    source_node = self._rng.choice(length)
     return [graph, source_node]
 
+class DijkstraSampler(Sampler):
+  """DijkstraSampler sampler."""
+
+  def _sample_data(
+      self,
+      length: int,
+      p: Tuple[float, ...] = (0.5,),
+      low: float = 0.,
+      high: float = 1.,
+  ):
+    graph = self._random_er_graph(
+        nb_nodes=length,
+        p=self._rng.choice(p),
+        directed=True,
+        acyclic=False,
+        weighted=True,
+        low=low,
+        high=high,
+        )
+    source_node = self._rng.choice(length)
+    return [graph, source_node]
 
 class DAGPathSampler(Sampler):
   """Sampler for DAG shortest paths."""
@@ -694,7 +714,7 @@ SAMPLERS = {
     'mst_prim': BellmanFordSampler,
     'bellman_ford': BellmanFordSampler,
     'dag_shortest_paths': DAGPathSampler,
-    'dijkstra': BellmanFordSampler,
+    'dijkstra': DijkstraSampler,
     'floyd_warshall': FloydWarshallSampler,
     'johnsons': JohnsonsSampler,
     'bipartite_matching': BipartiteSampler,
