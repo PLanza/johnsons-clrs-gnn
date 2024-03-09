@@ -1175,7 +1175,7 @@ def bellman_ford(A: _Array, s: int) -> _Out:
         specs.Stage.HINT,
         next_probe={
             'pi_h': np.copy(pi),
-            'd_h': np.copy(prev_d),
+            'd': np.copy(prev_d),
             'msk': np.copy(prev_msk)
         })
     for u in range(A.shape[0]):
@@ -1188,7 +1188,7 @@ def bellman_ford(A: _Array, s: int) -> _Out:
     if np.all(d == prev_d):
       break
 
-  probing.push(probes, specs.Stage.OUTPUT, next_probe={'d': np.copy(pi)})
+  probing.push(probes, specs.Stage.OUTPUT, next_probe={'pi': np.copy(pi)})
   probing.finalize(probes)
 
   return pi, probes
