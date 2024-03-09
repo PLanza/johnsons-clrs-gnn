@@ -498,7 +498,7 @@ class BellmanFordSampler(Sampler):
     last_column[-1] = 1e-5
     graph = np.vstack([graph, last_row])
     graph = np.hstack([graph, last_column])
-    source_node = length
+    source_node = length -1
     return [graph, source_node]
 
 class DijkstraSampler(Sampler):
