@@ -493,8 +493,9 @@ class BellmanFordSampler(Sampler):
         low=low,
         high=high,
         negative_cycles=False)
-    last_row = np.full((1, length), 1e-5)
-    last_column = np.zeros((length+1, 1))
+    print(graph.shape)
+    last_row = np.full((1, length - 1), 1e-5)
+    last_column = np.zeros((length, 1))
     last_column[-1] = 1e-5
     np.hstack([graph, last_row])
     np.vstack([graph, last_column])
