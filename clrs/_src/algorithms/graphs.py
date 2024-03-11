@@ -1561,7 +1561,7 @@ def johnsons(A: _Array) -> _Out:
         edge = u == -1 or A[u,v] != 0
         
         if u == -1 and edge:
-          ifprev_d[u] + w_uv < d[v]:
+          if prev_d[u] + w_uv < d[v]:
             d[v] = (prev_d[u] if u != -1 else 0) + w_uv
             pi[v] = u
     
