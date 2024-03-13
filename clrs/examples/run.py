@@ -300,7 +300,7 @@ def create_samplers(rng, train_lengths: List[int]):
 
       logging.info('Creating samplers for algo %s', algorithm)
 
-      p = tuple([0.1 + 0.1 * i for i in range(9)])
+      p = tuple([0.1 + 0.1 * i for i in range(2)])
       if p and algorithm in ['articulation_points', 'bridges',
                              'mst_kruskal', 'bipartite_matching']:
         # Choose a lower connection probability for the above algorithms,
