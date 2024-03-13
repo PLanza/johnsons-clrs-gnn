@@ -36,6 +36,7 @@ flags.DEFINE_list('algorithms', ['bfs'], 'Which algorithms to run.')
 flags.DEFINE_list('train_lengths', ['4', '7', '11', '13', '16'],
                   'Which training sizes to use. A size of -1 means '
                   'use the benchmark dataset.')
+flags.DEFINE_list('p', [0.1 + 0.1 * i for i in range(2)], 'p values for generating graphs')
 flags.DEFINE_integer('length_needle', -8,
                      'Length of needle for training and validation '
                      '(not testing) in string matching algorithms. '
@@ -300,7 +301,7 @@ def create_samplers(rng, train_lengths: List[int]):
 
       logging.info('Creating samplers for algo %s', algorithm)
 
-      p = tuple([0.1 + 0.1 * i for i in range(2)])
+      p = tuple([float(x) for x in FLAGS.p])
       if p and algorithm in ['articulation_points', 'bridges',
                              'mst_kruskal', 'bipartite_matching']:
         # Choose a lower connection probability for the above algorithms,
