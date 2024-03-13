@@ -531,6 +531,8 @@ def main(unused_argv):
 
   eval_model.restore_model('best.pkl', only_load_processor=False)
 
+  tests = { name: None for name in FLAGS.algorithms }
+
   for algo_idx in range(len(train_samplers)):
     common_extras = {'examples_seen': current_train_items[algo_idx],
                      'step': step,
@@ -544,7 +546,10 @@ def main(unused_argv):
         new_rng_key,
         extras=common_extras)
     logging.info('(test) algo %s : %s', FLAGS.algorithms[algo_idx], test_stats)
+    tests[FLAGS.algorithms[algo_idx]] = test_stats
 
+  with open('tests.pickle','wb') as test_file:
+    pickle.dump(tests, test_file, protocol=pickle.HIGHEST_PROTOCOL)
   logging.info('Done!')
 
 
